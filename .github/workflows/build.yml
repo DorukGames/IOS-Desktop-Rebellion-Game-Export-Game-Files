@@ -2,50 +2,46 @@ name: Build iOS IPA
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  build-ios:
+  build:
     runs-on: macos-latest
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install Godot 4.3
+      - name: Setup Godot
         run: |
-          curl -L "https://tinyurl.com" -o godot.zip
-          unzip godot.zip -d godot
-          chmod +x godot/Godot.app/Contents/MacOS/Godot
+          curl -L "https://github.com" -o godot.zip
+          unzip godot.zip
+          chmod +x Godot.app/Contents/MacOS/Godot
 
-      - name: Download Export Templates
+      - name: Templates
         run: |
-          curl -L "https://tinyurl.com" -o templates.tpz
+          curl -L "https://github.com" -o templates.tpz
           mkdir -p ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
-          unzip templates.tpz -d temp_templates
-          mv temp_templates/templates/* ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
+          unzip templates.tpz -d tmp
+          mv tmp/templates/* ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
 
-      - name: Export Godot Project
+      - name: Export
         run: |
-          mkdir -p build
-          ./godot/Godot.app/Contents/MacOS/Godot --headless --export-release "iOS" build/exported_project.zip
+          mkdir -p out
+          ./Godot.app/Contents/MacOS/Godot --headless --export-release "iOS" out/game.zip
+          unzip out/game.zip -d out/xcode
         
-      - name: Build Xcode Project
+      - name: Xcode Build
         run: |
-          cd build
-          unzip exported_project.zip
-          xcodebuild -project *.xcodeproj -scheme "iOS" -sdk iphoneos -configuration Release -destination generic/platform=iOS archive -archivePath ios_project.xcarchive CODE_SIGNING_ALLOWED=NO
+          cd out/xcode
+          xcodebuild -project *.xcodeproj -scheme "iOS" -sdk iphoneos -configuration Release -destination generic/platform=iOS archive -archivePath ../game.xcarchive CODE_SIGNING_ALLOWED=NO
       
-      - name: Package Unsigned IPA
+      - name: IPA
         run: |
-          APP_PATH=$(find build/ios_project.xcarchive -name "*.app")
-          mkdir -p build/Payload
-          cp -r "$APP_PATH" build/Payload/
-          cd build && zip -r ios_project.ipa Payload
+          mkdir -p out/Payload
+          cp -r out/game.xcarchive/Products/Applications/*.app out/Payload/
+          cd out && zip -r game.ipa Payload
 
-      - name: Upload Finished Game
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: my_game_ios
-          path: build/ios_project.ipa
+          name: my_ios_game
+          path: out/game.ipa
