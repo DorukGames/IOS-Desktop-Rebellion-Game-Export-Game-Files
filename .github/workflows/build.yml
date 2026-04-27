@@ -9,23 +9,26 @@ jobs:
       - uses: actions/checkout@v4
       - name: godot
         run: |
-          URL=$(curl -s https://github.com | grep "browser_download_url.*macos.universal.zip" | cut -d '"' -f 4)
-          curl -L "$URL" -o g.zip
+          A="https://github.com"
+          B="releases/download/4.3-stable/"
+          C="Godot_v4.3-stable_macos.universal.zip"
+          curl -L "$A$B$C" -o g.zip
           unzip g.zip
           chmod +x Godot.app/Contents/MacOS/Godot
       - name: templates
         run: |
-          TURL=$(curl -s https://github.com | grep "browser_download_url.*export_templates.tpz" | cut -d '"' -f 4)
-          curl -L "$TURL" -o t.tpz
+          A="https://github.com"
+          B="releases/download/4.3-stable/"
+          D="Godot_v4.3-stable_export_templates.tpz"
+          curl -L "$A$B$D" -o t.tpz
           mkdir -p ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
           unzip t.tpz -d tmp
           mv tmp/templates/* ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
       - name: export
         run: |
-          mkdir -p out
-          ./Godot.app/Contents/MacOS/Godot --headless --export-release "iOS" out/g.zip
-          unzip out/g.zip -d out/x
-          cd out/x
+          ./Godot.app/Contents/MacOS/Godot --headless --export-release "iOS" g.zip
+          unzip g.zip -d x
+          cd x
           xcodebuild -project *.xcodeproj -scheme "iOS" -sdk iphoneos -configuration Release -destination generic/platform=iOS archive -archivePath ../g.xcarchive CODE_SIGNING_ALLOWED=NO
           mkdir -p ../Payload
           cp -r ../g.xcarchive/Products/Applications/*.app ../Payload/
@@ -34,4 +37,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: game
-          path: out/g.ipa
+          path: g.ipa
