@@ -7,18 +7,21 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    env:
+      GODOT_URL: https://github.com
+      TEMP_URL: https://github.com
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Godot
         run: |
-          curl -L "https://github.com" -o godot.zip
+          curl -L "$GODOT_URL" -o godot.zip
           unzip godot.zip
           chmod +x Godot.app/Contents/MacOS/Godot
 
       - name: Templates
         run: |
-          curl -L "https://github.com" -o templates.tpz
+          curl -L "$TEMP_URL" -o templates.tpz
           mkdir -p ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
           unzip templates.tpz -d tmp
           mv tmp/templates/* ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
