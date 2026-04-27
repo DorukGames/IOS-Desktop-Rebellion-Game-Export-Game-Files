@@ -7,32 +7,30 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - name: godot
-        run: |
-          A="https://github.com"
-          B="releases/download/4.3-stable/"
-          C="Godot_v4.3-stable_macos.universal.zip"
-          curl -L "$A$B$C" -o g.zip
-          unzip g.zip
-          chmod +x Godot.app/Contents/MacOS/Godot
+
+      - name: setup
+        uses: firebelley/godot-setup@v1
+        with:
+          godot-version: 4.3
+
       - name: templates
         run: |
-          A="https://github.com"
-          B="releases/download/4.3-stable/"
-          D="Godot_v4.3-stable_export_templates.tpz"
-          curl -L "$A$B$D" -o t.tpz
+          URL="https://github.com"
+          curl -L "$URL" -o t.tpz
           mkdir -p ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
           unzip t.tpz -d tmp
           mv tmp/templates/* ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
+
       - name: export
         run: |
-          ./Godot.app/Contents/MacOS/Godot --headless --export-release "iOS" g.zip
+          godot --headless --export-release "iOS" g.zip
           unzip g.zip -d x
           cd x
           xcodebuild -project *.xcodeproj -scheme "iOS" -sdk iphoneos -configuration Release -destination generic/platform=iOS archive -archivePath ../g.xcarchive CODE_SIGNING_ALLOWED=NO
           mkdir -p ../Payload
           cp -r ../g.xcarchive/Products/Applications/*.app ../Payload/
           cd .. && zip -r g.ipa Payload
+
       - name: upload
         uses: actions/upload-artifact@v4
         with:
