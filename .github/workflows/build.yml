@@ -1,38 +1,58 @@
-name: build
+name: Build iOS IPA
+
 on:
   push:
     branches: [ main ]
+
 jobs:
   ios:
     runs-on: macos-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: setup
-        uses: firebelley/godot-setup@v1
-        with:
-          godot-version: 4.3
-
-      - name: templates
+      - name: Install Godot
         run: |
-          URL="https://github.com"
-          curl -L "$URL" -o t.tpz
-          mkdir -p ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
-          unzip t.tpz -d tmp
-          mv tmp/templates/* ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
+          curl -L https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_macos.universal.zip -o godot.zip
+          unzip godot.zip -d godot
+          chmod +x godot/Godot.app/Contents/MacOS/Godot
 
-      - name: export
+      - name: Install export templates
         run: |
-          godot --headless --export-release "iOS" g.zip
-          unzip g.zip -d x
-          cd x
-          xcodebuild -project *.xcodeproj -scheme "iOS" -sdk iphoneos -configuration Release -destination generic/platform=iOS archive -archivePath ../g.xcarchive CODE_SIGNING_ALLOWED=NO
-          mkdir -p ../Payload
-          cp -r ../g.xcarchive/Products/Applications/*.app ../Payload/
-          cd .. && zip -r g.ipa Payload
+          curl -L https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz -o templates.tpz
+          mkdir -p "$HOME/Library/Application Support/Godot/export_templates/4.3.stable"
+          unzip templates.tpz -d templates_unpacked
+          cp templates_unpacked/templates/ios.zip "$HOME/Library/Application Support/Godot/export_templates/4.3.stable/ios.zip"
 
-      - name: upload
+      - name: Export iOS Xcode project
+        run: |
+          mkdir -p build
+          ./godot/Godot.app/Contents/MacOS/Godot --headless --verbose --export-release "iOS" build/ios_project.zip
+          unzip build/ios_project.zip -d build/ios_project
+
+      - name: Build unsigned archive
+        run: |
+          cd build/ios_project
+          xcodebuild \
+            -project *.xcodeproj \
+            -scheme "$(basename *.xcodeproj .xcodeproj)" \
+            -sdk iphoneos \
+            -configuration Release \
+            -destination generic/platform=iOS \
+            archive \
+            -archivePath ../ios_project.xcarchive \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package IPA
+        run: |
+          mkdir -p build/Payload
+          cp -r build/ios_project.xcarchive/Products/Applications/*.app build/Payload/
+          cd build
+          zip -r game.ipa Payload
+
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: game
-          path: g.ipa
+          name: game-ipa
+          path: build/game.ipa
