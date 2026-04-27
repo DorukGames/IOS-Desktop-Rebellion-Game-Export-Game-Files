@@ -15,15 +15,13 @@ jobs:
 
       - name: Install Godot 4.3
         run: |
-          URL="https://github.com"
-          curl -L "$URL" -o godot.zip
+          curl -L "https://tinyurl.com" -o godot.zip
           unzip godot.zip -d godot
           chmod +x godot/Godot.app/Contents/MacOS/Godot
 
       - name: Download Export Templates
         run: |
-          T_URL="https://github.com"
-          curl -L "$T_URL" -o templates.tpz
+          curl -L "https://tinyurl.com" -o templates.tpz
           mkdir -p ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
           unzip templates.tpz -d temp_templates
           mv temp_templates/templates/* ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
