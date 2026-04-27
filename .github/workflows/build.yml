@@ -1,0 +1,51 @@
+name: Build iOS IPA
+
+on:
+  push:
+    branches:
+      - main  # This matches your "main" branch
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Godot
+        run: |
+          curl -L https://github.com -o godot.zip
+          unzip godot.zip -d godot
+          chmod +x godot/Godot.app/Contents/MacOS/Godot
+
+      - name: Download Export Templates
+        run: |
+          curl -L https://github.com -o templates.tpz
+          mkdir -p ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
+          unzip templates.tpz -d temp_templates
+          mv temp_templates/templates/* ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
+
+      - name: Export Godot Project for iOS
+        run: |
+          mkdir -p build
+          ./godot/Godot.app/Contents/MacOS/Godot --headless --export-release "iOS" build/ios_project.zip
+        
+      - name: Build Xcode Project (Unsigned)
+        run: |
+          cd build
+          unzip ios_project.zip
+          xcodebuild -project *.xcodeproj -scheme "iOS" -sdk iphoneos -configuration Release -destination generic/platform=iOS archive -archivePath ios_project.xcarchive CODE_SIGNING_ALLOWED=NO
+      
+      - name: Package Unsigned IPA
+        run: |
+          cd build/ios_project.xcarchive/Products/Applications
+          mkdir -p Payload
+          mv *.app Payload/
+          zip -r ../../../ios_project.ipa Payload
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios_project.ipa
+          path: build/ios_project.ipa
