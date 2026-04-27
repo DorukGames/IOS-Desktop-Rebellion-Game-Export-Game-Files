@@ -25,6 +25,29 @@ jobs:
           unzip templates.tpz -d templates_unpacked
           cp templates_unpacked/templates/ios.zip "$HOME/Library/Application Support/Godot/export_templates/4.3.stable/ios.zip"
 
+      - name: Fix missing iOS Team ID
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("export_presets.cfg")
+          text = path.read_text()
+
+          if 'application/app_store_team_id=' in text:
+              text = text.replace(
+                  'application/app_store_team_id=""',
+                  'application/app_store_team_id="ABCDE12345"'
+              )
+          else:
+              text += '\napplication/app_store_team_id="ABCDE12345"\n'
+
+          path.write_text(text)
+          PY
+
+      - name: Import Godot assets
+        run: |
+          ./godot/Godot.app/Contents/MacOS/Godot --headless --editor --quit
+
       - name: Export iOS Xcode project
         run: |
           mkdir -p build
@@ -34,9 +57,12 @@ jobs:
       - name: Build unsigned archive
         run: |
           cd build/ios_project
+          PROJECT_FILE=$(ls *.xcodeproj | head -n 1)
+          SCHEME_NAME="${PROJECT_FILE%.xcodeproj}"
+
           xcodebuild \
-            -project *.xcodeproj \
-            -scheme "$(basename *.xcodeproj .xcodeproj)" \
+            -project "$PROJECT_FILE" \
+            -scheme "$SCHEME_NAME" \
             -sdk iphoneos \
             -configuration Release \
             -destination generic/platform=iOS \
