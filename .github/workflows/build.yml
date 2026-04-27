@@ -1,44 +1,35 @@
-name: Build iOS IPA
+name: build
 on:
   push:
     branches: [ main ]
 jobs:
-  build:
+  ios:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Godot
-        uses: firebelley/godot-setup@v1
-        with:
-          godot-version: 4.3
-
-      - name: Templates
+      - name: godot
         run: |
-          curl -L "https://bit.ly" -o templates.tpz
+          curl -L "https://bit.ly" -o g.zip
+          unzip g.zip
+          chmod +x Godot.app/Contents/MacOS/Godot
+      - name: templates
+        run: |
+          curl -L "https://bit.ly" -o t.tpz
           mkdir -p ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
-          unzip templates.tpz -d tmp
+          unzip t.tpz -d tmp
           mv tmp/templates/* ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
-
-      - name: Export
+      - name: export
         run: |
           mkdir -p out
-          godot --headless --export-release "iOS" out/game.zip
-          unzip out/game.zip -d out/xcode
-        
-      - name: Xcode Build
-        run: |
-          cd out/xcode
-          xcodebuild -project *.xcodeproj -scheme "iOS" -sdk iphoneos -configuration Release -destination generic/platform=iOS archive -archivePath ../game.xcarchive CODE_SIGNING_ALLOWED=NO
-      
-      - name: IPA
-        run: |
-          mkdir -p out/Payload
-          cp -r out/game.xcarchive/Products/Applications/*.app out/Payload/
-          cd out && zip -r game.ipa Payload
-
-      - name: Upload
+          ./Godot.app/Contents/MacOS/Godot --headless --export-release "iOS" out/g.zip
+          unzip out/g.zip -d out/x
+          cd out/x
+          xcodebuild -project *.xcodeproj -scheme "iOS" -sdk iphoneos -configuration Release -destination generic/platform=iOS archive -archivePath ../g.xcarchive CODE_SIGNING_ALLOWED=NO
+          mkdir -p ../Payload
+          cp -r ../g.xcarchive/Products/Applications/*.app ../Payload/
+          cd .. && zip -r g.ipa Payload
+      - name: upload
         uses: actions/upload-artifact@v4
         with:
-          name: my_ios_game
-          path: out/game.ipa
+          name: game
+          path: out/g.ipa
