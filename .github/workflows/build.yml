@@ -3,7 +3,7 @@ name: Build iOS IPA
 on:
   push:
     branches:
-      - main  # This matches your "main" branch
+      - main
 
 jobs:
   build-ios:
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install Godot
+      - name: Install Godot 4.3
         run: |
           curl -L https://github.com -o godot.zip
           unzip godot.zip -d godot
@@ -26,26 +26,26 @@ jobs:
           unzip templates.tpz -d temp_templates
           mv temp_templates/templates/* ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
 
-      - name: Export Godot Project for iOS
+      - name: Export Godot Project
         run: |
           mkdir -p build
-          ./godot/Godot.app/Contents/MacOS/Godot --headless --export-release "iOS" build/ios_project.zip
+          ./godot/Godot.app/Contents/MacOS/Godot --headless --export-release "iOS" build/exported_project.zip
         
-      - name: Build Xcode Project (Unsigned)
+      - name: Build Xcode Project
         run: |
           cd build
-          unzip ios_project.zip
+          unzip exported_project.zip
           xcodebuild -project *.xcodeproj -scheme "iOS" -sdk iphoneos -configuration Release -destination generic/platform=iOS archive -archivePath ios_project.xcarchive CODE_SIGNING_ALLOWED=NO
       
       - name: Package Unsigned IPA
         run: |
-          cd build/ios_project.xcarchive/Products/Applications
-          mkdir -p Payload
-          mv *.app Payload/
-          zip -r ../../../ios_project.ipa Payload
+          APP_PATH=$(find build/ios_project.xcarchive -name "*.app")
+          mkdir -p build/Payload
+          cp -r "$APP_PATH" build/Payload/
+          cd build && zip -r ios_project.ipa Payload
 
-      - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload Finished Game
+        uses: actions/upload-artifact@v4
         with:
-          name: ios_project.ipa
+          name: my_game_ios
           path: build/ios_project.ipa
