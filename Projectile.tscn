@@ -1,0 +1,29 @@
+[gd_scene load_steps=7 format=3 uid="uid://e1j7l8ejn4ix"]
+
+[ext_resource type="Script" path="res://projectile.gd" id="1_6kfyq"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wqwmc"]
+albedo_color = Color(0.366266, 0.205635, 0.109041, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ofyic"]
+material = SubResource("StandardMaterial3D_wqwmc")
+
+[sub_resource type="Gradient" id="Gradient_svq1p"]
+colors = PackedColorArray(0.364706, 0.203922, 0.109804, 1, 0.223775, 0.116507, 0.0536147, 1)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_uvxle"]
+color_ramp = SubResource("Gradient_svq1p")
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cuvy5"]
+
+[node name="Area2D" type="Area2D"]
+script = ExtResource("1_6kfyq")
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="."]
+scale = Vector2(140, 140)
+mesh = SubResource("BoxMesh_ofyic")
+texture = SubResource("NoiseTexture2D_uvxle")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+scale = Vector2(7, 7)
+shape = SubResource("RectangleShape2D_cuvy5")

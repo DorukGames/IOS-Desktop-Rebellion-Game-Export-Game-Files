@@ -1,0 +1,55 @@
+[gd_scene load_steps=4 format=3 uid="uid://d314p4wmgqfbf"]
+
+[ext_resource type="Script" path="res://explosion.gd" id="1_ey70l"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i10nl"]
+bg_color = Color(0.337255, 0.176471, 0, 0.537255)
+corner_radius_top_left = 25
+corner_radius_top_right = 25
+corner_radius_bottom_right = 25
+corner_radius_bottom_left = 25
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xdfx5"]
+bg_color = Color(0.337255, 0.176471, 0, 1)
+corner_radius_top_left = 100
+corner_radius_top_right = 100
+corner_radius_bottom_right = 100
+corner_radius_bottom_left = 100
+
+[node name="Explosion" type="Node2D"]
+script = ExtResource("1_ey70l")
+
+[node name="ExplocionLine1" type="Panel" parent="."]
+offset_left = 15.0
+offset_top = -35.0
+offset_right = 35.0
+offset_bottom = 90.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_i10nl")
+
+[node name="ExplocionLine2" type="Panel" parent="."]
+offset_left = 85.0
+offset_top = 15.0
+offset_right = 105.0
+offset_bottom = 140.0
+rotation = 1.5708
+theme_override_styles/panel = SubResource("StyleBoxFlat_i10nl")
+
+[node name="ExplocionLine3" type="Panel" parent="."]
+offset_left = 50.0
+offset_top = -15.0
+offset_right = 70.0
+offset_bottom = 85.0
+rotation = 0.785398
+theme_override_styles/panel = SubResource("StyleBoxFlat_i10nl")
+
+[node name="ExplocionLine4" type="Panel" parent="."]
+offset_left = -15.0
+offset_right = 5.0
+offset_bottom = 100.0
+rotation = -0.785398
+theme_override_styles/panel = SubResource("StyleBoxFlat_i10nl")
+
+[node name="Circle" type="Panel" parent="."]
+offset_right = 50.0
+offset_bottom = 50.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_xdfx5")

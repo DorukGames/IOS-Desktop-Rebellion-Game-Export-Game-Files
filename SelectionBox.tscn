@@ -1,0 +1,30 @@
+[gd_scene load_steps=4 format=3 uid="uid://g3hs28ogn4si"]
+
+[ext_resource type="Script" path="res://selection_box.gd" id="1_68swx"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0hjv4"]
+size = Vector2(40, 40)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_elutk"]
+bg_color = Color(0.188235, 0.396078, 0.701961, 0.196078)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.109804, 0.266667, 0.490196, 0.294118)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="StaticBody2D" type="StaticBody2D"]
+script = ExtResource("1_68swx")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(20, 20)
+shape = SubResource("RectangleShape2D_0hjv4")
+
+[node name="Panel" type="Panel" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_elutk")
