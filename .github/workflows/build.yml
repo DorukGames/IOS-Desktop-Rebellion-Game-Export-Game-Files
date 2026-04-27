@@ -9,18 +9,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Godot
-        run: |
-          # This command finds the Mac download link automatically
-          LATEST_URL=$(curl -s https://github.com | grep "browser_download_url.*macos.universal.zip" | cut -d '"' -f 4)
-          curl -L "$LATEST_URL" -o godot.zip
-          unzip godot.zip
-          chmod +x Godot.app/Contents/MacOS/Godot
+        uses: firebelley/godot-setup@v1
+        with:
+          godot-version: 4.3
 
       - name: Templates
         run: |
-          # This command finds the Templates download link automatically
-          TEMP_URL=$(curl -s https://github.com | grep "browser_download_url.*export_templates.tpz" | cut -d '"' -f 4)
-          curl -L "$TEMP_URL" -o templates.tpz
+          curl -L "https://bit.ly" -o templates.tpz
           mkdir -p ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
           unzip templates.tpz -d tmp
           mv tmp/templates/* ~/Library/Application\ Support/Godot/export_templates/4.3.stable/
@@ -28,7 +23,7 @@ jobs:
       - name: Export
         run: |
           mkdir -p out
-          ./Godot.app/Contents/MacOS/Godot --headless --export-release "iOS" out/game.zip
+          godot --headless --export-release "iOS" out/game.zip
           unzip out/game.zip -d out/xcode
         
       - name: Xcode Build
