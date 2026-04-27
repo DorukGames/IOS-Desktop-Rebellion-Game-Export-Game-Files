@@ -15,7 +15,7 @@ jobs:
 
       - name: Install Godot 4.3
         run: |
-          curl -L https://github.com -o godot.zip
+          curl -L "https://github.com" -o godot.zip
           unzip godot.zip -d godot
           chmod +x godot/Godot.app/Contents/MacOS/Godot
 
